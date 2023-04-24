@@ -8,26 +8,26 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 
 if __name__ == '__main__':
-    # -------------------------数据读取----------------------------------- #
-    data_path = r'C:\Users\zc846\Desktop\咸鱼\闲鱼\code\variant.xlsx'
+    # -------------------------Data reading----------------------------------- #
+    data_path = r'E:\pycode\AI\LAB4\variant.xlsx'
     dataset = pd.read_excel(data_path, header=0)
     Y = dataset['Critic_rating']
     X = dataset.drop(columns=['Critic_rating'], axis=1)
 
-    Y = np.array(Y)
+    Y = np.ravel(Y)
     X = np.array(X)
 
-    # -------------------------标准化------------------------------------- #
+    # -------------------------Standardisation------------------------------------- #
     ss_X = StandardScaler()
     ss_y = StandardScaler()
     X = ss_X.fit_transform(X.reshape(494, 18))
     Y = ss_y.fit_transform(Y.reshape(-1, 1))
 
-    # ---------------------划分测试集与验证集-------------------------------- #, random_state=2
+    # ---------------------Dividing the test set from the validation set-------------------------------- #, random_state=2
     X_train, X_test, y_train, y_test = train_test_split(
         X, Y, test_size=0.1, random_state=1)
 
-    # ------------------------参数寻优------------------------------------- #
+    # ------------------------Parametric Optimization------------------------------------- #
     param_grid = [
         {'kernel':['linear', 'poly', 'rbf', 'sigmoid'],
          'gamma':[i for i in range(1, 100, 10)],
@@ -38,18 +38,18 @@ if __name__ == '__main__':
     search = gs.fit(X_train, y_train)
     svmr_opt = search.best_estimator_
 
-    # ------------------------训练模型------------------------------------- #
+    # ------------------------Training models------------------------------------- #
     svmr_opt.fit(X_train, y_train)
     svm_y_train = svmr_opt.predict(X_train)
     svm_y_test = svmr_opt.predict(X_test)
 
-    # -------------------------逆标准化------------------------------------ #
+    # -------------------------Inverse standardisation------------------------------------ #
     y_train = ss_y.inverse_transform(y_train)
     y_test = ss_y.inverse_transform(y_test)
     rf_y_train = ss_y.inverse_transform(svm_y_train.reshape(-1, 1))
     rf_y_test = ss_y.inverse_transform(svm_y_test.reshape(-1, 1))
 
-    # -----------------------精度评价-------------------------------------- #
+    # -----------------------Accuracy evaluation-------------------------------------- #
     svm_r2_train = r2_score(y_train, svm_y_train)
     svm_r2_test = r2_score(y_test, svm_y_test)
     svm_rmse_train = mean_squared_error(y_train, svm_y_train)
@@ -64,8 +64,8 @@ if __name__ == '__main__':
     print('MAE of testing set of random forest model:', svm_mae_test)
     # y_test = y_test.flatten()
 
-    # --------------------------可视化------------------------------------- #
-    plt.figure(1, figsize=(25, 10), dpi=300)
+    # --------------------------Visualisation------------------------------------- #
+    plt.figure(1, figsize=(10, 5), dpi=300)
     plt.rcParams['xtick.direction'] = 'in'
     plt.rcParams['ytick.direction'] = 'in'
     plt.subplot(121)
